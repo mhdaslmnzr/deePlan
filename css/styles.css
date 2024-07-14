@@ -1,0 +1,61 @@
+* {
+    font-family: "Poppins", sans-serif;
+}
+
+#mallu {
+    margin-top: 15px;
+    font-family: "Noto Sans Malayalam", sans-serif;
+    font-optical-sizing: auto;
+}
+
+.overdue {
+    background-color: #ff0026;
+}
+
+.due-today {
+    background-color: #ffcdd2;
+}
+
+.due-tomorrow {
+    background-color: #bbdefb;
+}
+
+.due-later {
+    background-color: #c8e6c9;
+}
+
+.task-container {
+    cursor: pointer;
+}
+
+.delete-icon,
+.complete-icon {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none;
+}
+
+.task-completed {
+    background-color: #d1d5db;
+    text-decoration: line-through;
+}
+
+.task-list-gap {
+    gap: 15px;
+}
+
+.task-list-item {
+    width: calc(100% - 20px);
+}
+
+@media (min-width: 640px) {
+    .task-list-item {
+        width: calc(100% - 30px); /* Adjusted width for desktop view */
+    }
+}
+
+#errorMessage {
+    display: block;
+}
