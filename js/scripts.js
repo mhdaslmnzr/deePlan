@@ -1,6 +1,36 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-analytics.js";
+import { getDatabase, ref, set, get, update, remove, push } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+    apiKey: "AIzaSyAX8R_kTUe5EnrTDfzP5PsaqaIrxwNzpXk",
+    authDomain: "deeplan-41bda.firebaseapp.com",
+    databaseURL: "https://deeplan-41bda-default-rtdb.firebaseio.com",
+    projectId: "deeplan-41bda",
+    storageBucket: "deeplan-41bda.appspot.com",
+    messagingSenderId: "690954571128",
+    appId: "1:690954571128:web:3880e1b5cf0758624c0c8d",
+    measurementId: "G-31DJ0LL3MT"
+  };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const auth = getAuth(app);  // Initialize Auth
+const database = getDatabase(app);  // Initialize Realtime Database
+const tasksRef = ref(database, 'tasks');  // Reference to 'tasks' in the database
+
+// Sign in anonymously
+signInAnonymously(auth)
+    .catch((error) => {
+        console.error('Error during anonymous sign-in:', error);
+    });
+
 document.addEventListener('DOMContentLoaded', function() {
     const tasks = [];
-
     const taskContainer = document.getElementById('tasks');
     const addTaskButton = document.getElementById('addTaskButton');
     const taskModal = document.getElementById('taskModal');
@@ -29,15 +59,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (taskName) {
             errorMessage.classList.add('hidden');  // Hide error message
-            tasks.push({ name: taskName, date: taskDate, completed: false });
-            renderTasks();
-            taskForm.reset();
-            taskModal.classList.add('hidden');
+            const newTaskRef = push(tasksRef);  // Push a new task to the database
+            set(newTaskRef, { name: taskName, date: taskDate, completed: false })
+                .then(() => {
+                    console.log('Task added successfully');  // Log success
+                    taskForm.reset();
+                    taskModal.classList.add('hidden');
+                    fetchTasks();  // Fetch tasks after adding
+                })
+                .catch(error => {
+                    console.error('Error adding task: ', error);  // Log errors
+                });
         } else {
             errorMessage.classList.remove('hidden');  // Show error message
         }
     });
 
+    // Fetch tasks from Firebase and render them
+    function fetchTasks() {
+        get(tasksRef)
+            .then(snapshot => {
+                tasks.length = 0;  // Clear existing tasks
+                snapshot.forEach(childSnapshot => {
+                    tasks.push({ id: childSnapshot.key, ...childSnapshot.val() });
+                });
+                console.log('Fetched tasks:', tasks);  // Log tasks
+                renderTasks();  // Render tasks
+            })
+            .catch(error => {
+                console.error('Error fetching tasks: ', error);  // Log errors
+            });
+    }
+
+    // Render tasks on the page
     function renderTasks() {
         taskContainer.innerHTML = '';
         if (tasks.length === 0) {
@@ -74,34 +128,44 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
 
-                taskElement.className = `flex justify-between items-center border-b border-slate-200 py-3 px-2 border-l-4 ${dueClass} task-list-item task-list-gap`;
+                taskElement.className = `flex justify-between items-center border-b border-slate-200 py-3 px-2 border-l-4 ${dueClass} task-list-item task-list-gap m-1 rounded-md`;
                 taskElement.innerHTML = `
                     <div class="inline-flex items-center space-x-2">
                         <div>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-slate-500 hover:text-indigo-600 hover:cursor-pointer complete-icon">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 12.75l3 3 7.5-7.5" />
                             </svg>
                         </div>
-                        <div class="${task.completed ? 'line-through text-slate-500' : ''}">${task.name}</div>
+                        <div>
+                            <p class="text-lg">${task.name}</p>
+                            <p class="text-sm text-slate-500">${daysLeft}</p>
+                        </div>
                     </div>
-                    <div class="flex space-x-4 items-center">
-                        <span class="text-xs ${dueClass}">${daysLeft || 'No Due Date'}</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-red-500 hover:text-red-700 hover:cursor-pointer delete-icon">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-red-500 hover:text-red-700 hover:cursor-pointer delete-icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 `;
 
-                // Handle task completion
+                // Mark task as completed
                 taskElement.querySelector('.complete-icon').addEventListener('click', () => {
-                    task.completed = !task.completed;
-                    renderTasks();
+                    update(ref(database, `tasks/${task.id}`), { completed: !task.completed })
+                        .then(() => {
+                            fetchTasks();  // Re-fetch tasks after updating
+                        })
+                        .catch(error => {
+                            console.error('Error updating task: ', error);
+                        });
                 });
 
-                // Handle task deletion
+                // Delete task
                 taskElement.querySelector('.delete-icon').addEventListener('click', () => {
-                    tasks.splice(tasks.indexOf(task), 1);
-                    renderTasks();
+                    remove(ref(database, `tasks/${task.id}`))
+                        .then(() => {
+                            fetchTasks();  // Re-fetch tasks after deleting
+                        })
+                        .catch(error => {
+                            console.error('Error deleting task: ', error);
+                        });
                 });
 
                 taskContainer.appendChild(taskElement);
@@ -109,5 +173,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    renderTasks();
+    fetchTasks();  // Initial fetch of tasks
 });
