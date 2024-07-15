@@ -1,50 +1,36 @@
-// Define the cache name
-const CACHE_NAME = 'deePlan-v1';
-
+const CACHE_NAME = 'deeplan-v1';
 const urlsToCache = [
-  './',
-  './index.html',
-  './css/styles.css',
-  './js/scripts.js',
-  './images/dmj.jpg',
-  './images/apple-touch-icon.png',
-  './images/favicon-32x32.png',
-  './images/favicon-16x16.png',
-  './images/safari-pinned-tab.svg',
-  './images/favicon.ico',
-  './images/android-chrome-192x192.png',
-  './images/android-chrome-384x384.png',
+  '/',
+  '/index.html',
+  '/css/styles.css',
+  '/js/scripts.js',
+  '/images/apple-touch-icon.png',
+  '/images/dmj.jpg',
+  '/images/favicon.ico',
+  '/images/icon-192x192.png',
+  '/images/icon-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-      caches.open(CACHE_NAME)
-        .then((cache) => {
-          console.log('Opened cache');
-          return Promise.all(
-            urlsToCache.map(url => {
-              return fetch(url).then(response => {
-                if (!response.ok) {
-                  throw new TypeError(`Failed to fetch ${url}`);
-                }
-                return cache.put(url, response);
-              }).catch(error => {
-                console.error(`Failed to cache ${url}: ${error.message}`);
-              });
-            })
-          );
-        })
-    );
-  });
-  
-  self.addEventListener('fetch', (event) => {
-    event.respondWith(
-      caches.match(event.request)
-        .then((response) => {
-          if (response) {
-            return response;
-          }
-          return fetch(event.request);
-        })
-    );
-  });
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        return cache.addAll(urlsToCache)
+          .catch((error) => {
+            console.error('Failed to cache some or all URLs:', error);
+          });
+      })
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        return response || fetch(event.request)
+          .catch((error) => {
+            console.error('Fetch failed for:', event.request.url, error);
+          });
+      })
+  );
+});
