@@ -1,83 +1,20 @@
 * {
-    font-family: "Poppins", sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
-#mallu {
-    margin-top: 15px;
-    font-family: "Noto Sans Malayalam", sans-serif;
-    font-optical-sizing: auto;
+html{
+    scroll-behavior: smooth;
 }
-
-.overdue {
-    background-color: #ffa4b2; /* Red */
-}
-
-.due-today {
-    background-color: #9ac1ff; /* Blue */
-}
-
-.due-soon {
-    background-color: #24edaa; /* Green */
-}
-
-.due-later {
-    background-color: #f3f4f6; /* Off-white */
-}
-
-.task-completed {
-    background-color: #d1d5db;
-    text-decoration: line-through;
-}
-
-.task-container {
-    cursor: pointer;
-}
-
-.delete-icon,
-.complete-icon {
-    cursor: pointer;
-}
-
-.hidden {
-    display: none;
-}
-
-.task-completed {
-    background-color: #d1d5db;
-    text-decoration: line-through;
-}
-
-.task-list-gap {
-    gap: 15px;
-}
-
-.task-list-item {
-    width: calc(100% - 20px);
-}
-
-@media (min-width: 640px) {
-    .task-list-item {
-        width: calc(100% - 30px); /* Adjusted width for desktop view */
-    }
-}
-
-#errorMessage {
-    display: block;
-}
-
-.task-list-item {
-    transition: all 0.5s ease;
-}
-
 
 body {
-    background-image: url('../images/dmj.jpg');
+    /* background-image: url('../images/dmj.jpg'); */
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
     background-position: center;
     position: relative;
     z-index: 1;
+    overflow-x: hidden;
 }
 
 body::before {
@@ -87,6 +24,40 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(147, 133, 133, 0.707); /* Adjust the opacity as needed */
-    z-index: -1; /* Make sure the overlay is behind the content */
+    background-color: rgba(255, 255, 255, 0.707);
+    z-index: -1;
+}
+
+.task-card {
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1.5px 4px rgba(0,0,0,0.04);
+    border-radius: 1rem;
+    border: 1px solid #f3f4f6;
+    transition: box-shadow 0.2s;
+}
+.task-card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 3px 8px rgba(0,0,0,0.08);
+}
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #be185d;
+    letter-spacing: -0.5px;
+}
+.fade-in {
+    animation: fadeIn 0.5s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.due-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    background: #fce7f3;
+    margin-right: 0.5rem;
+    font-size: 1rem;
 }

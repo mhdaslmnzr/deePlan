@@ -1,20 +1,67 @@
 {
-    "name": "deePlan",
-    "short_name": "deePlan",
-    "start_url": "/deePlan/",
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#3b82f6",
-    "icons": [
-      {
-        "src": "images/icon-192x192.png",
-        "sizes": "192x192",
-        "type": "image/png"
-      },
-      {
-        "src": "images/icon-512x512.png",
-        "sizes": "512x512",
-        "type": "image/png"
-      }
-    ]
-  }
+  "name": "DeepPlan - Smart Task Planner",
+  "short_name": "DeepPlan",
+  "description": "Smart task planner for organized life - designed for managing multiple tasks efficiently",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdf2f8",
+  "theme_color": "#ec4899",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "images/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "images/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add New Task",
+      "short_name": "Add Task",
+      "description": "Quickly add a new task",
+      "url": "/?action=add-task",
+      "icons": [
+        {
+          "src": "images/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "View Today's Tasks",
+      "short_name": "Today",
+      "description": "View tasks due today",
+      "url": "/?action=today",
+      "icons": [
+        {
+          "src": "images/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "images/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "images/screenshot-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+}

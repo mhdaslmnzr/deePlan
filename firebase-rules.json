@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "tasks": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "$other": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+} 

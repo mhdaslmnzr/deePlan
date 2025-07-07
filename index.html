@@ -2,75 +2,230 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>deePlan</title>
-
-    <link rel="shortcut icon" href="./images/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="./css/styles.css">
-
+    <title>DeepPlan</title>
+    <meta name="description" content="Smart task planner for organized life">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="images/icon-192x192.png">
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#3b82f6">
-    <link rel="apple-touch-icon" href="./images/apple-touch-icon.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-
-</head>
-<body class="antialiased bg-slate-200 mx-2">
-    <div class="max-w-lg mx-auto my-10 p-8">
-        <div class="p-4 bg-white rounded-lg shadow-md">
-            <div class="flex flex-row justify-between items-center">
-                <h1 class="text-5xl font-medium underline decoration-pink-500">deeplan</h1>
-                <button id="addTaskButton" class="bg-blue-700 text-white px-4 py-2 rounded-xl">+</button>
-            </div>
-            <div class="text-zinc-500 my-2" id="currentDateTime">
-            </div>
-        </div>
-        <div id="tasks" class="my-5">
-            <p id="noTasksMessage" class="text-slate-500"></p>
-        </div>
-    </div>
-
-    <div id="taskModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white p-8 rounded-xl shadow shadow-slate-300 w-full max-w-sm">
-            <h2 id="modalTitle" class="text-xl font-medium mb-4">Add Task</h2>
-            <form id="taskForm">
-                <div class="mb-4">
-                    <label for="taskName" class="block text-sm font-medium text-slate-700">Task Name</label>
-                    <textarea type="text" rows="8" required id="taskName" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 outline-none"></textarea>
-                    <p id="errorMessage" class="text-red-500 text-sm mt-1 hidden"></p>
-                </div>
-                <div class="mb-4">
-                    <label for="taskDate" class="block text-sm font-medium text-slate-700">Due Date</label>
-                    <input type="date" id="taskDate" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 outline-none">
-                </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" id="cancelButton" class="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
-                    <button type="submit" id="submitButton" class="bg-blue-500 text-white px-4 py-2 rounded">Add Task</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <script type="module" src="./js/scripts.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-          window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-              .then((registration) => {
-                console.log('Service Worker registered successfully:', registration.scope);
-              })
-              .catch((error) => {
-                console.log('Service Worker registration failed:', error);
-              });
-          });
+    
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js';
+        import { getDatabase, ref, set, get, update, remove, push, onValue } from 'https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js';
+        
+        try {
+            // Make Firebase available globally
+            window.firebase = {
+                initializeApp,
+                database: () => getDatabase(),
+                auth: () => getAuth(),
+                ref,
+                set,
+                get,
+                update,
+                remove,
+                push,
+                onValue,
+                signInAnonymously
+            };
+            
+            console.log('Firebase modules loaded successfully');
+        } catch (error) {
+            console.error('Error loading Firebase modules:', error);
+            // Show error to user
+            document.addEventListener('DOMContentLoaded', () => {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'fixed top-4 left-4 bg-red-500 text-white px-4 py-2 rounded-lg z-50';
+                errorDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Failed to load Firebase. Please check your internet connection and refresh the page.</span>
+                    </div>
+                `;
+                document.body.appendChild(errorDiv);
+            });
         }
-      </script>
+    </script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#fdf2f8',
+                            100: '#fce7f3',
+                            200: '#fbcfe8',
+                            300: '#f9a8d4',
+                            400: '#f472b6',
+                            500: '#ec4899',
+                            600: '#db2777',
+                            700: '#be185d',
+                            800: '#9d174d',
+                            900: '#831843'
+                        }
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .animate-bounce-in {
+            animation: bounceIn 0.6s ease-out;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Firebase Status -->
+    <div id="firebaseStatus" class="hidden"></div>
+    
+    <!-- Error Message -->
+    <div id="errorMessage" class="hidden fixed top-4 left-4 bg-red-500 text-white px-4 py-2 rounded-lg z-50">
+        <span></span>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="hidden fixed inset-0 flex items-center justify-center bg-white bg-opacity-60 z-50">
+        <div class="w-16 h-16 border-4 border-primary-300 border-t-primary-600 rounded-full animate-spin"></div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-6 max-w-md">
+        <!-- Header Section -->
+        <div class="text-center mb-8">
+
+            <div class="relative inline-block mb-4">
+                <img src="./images/dmj.jpg" alt="Deepu" class="w-24 h-24 rounded-full object-cover border-4 border-primary-200 shadow-lg">
+                <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-green-400 rounded-full border-4 border-white flex items-center justify-center">
+                    <div class="w-3 h-3 bg-white rounded-full"></div>
+                </div>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Hello, Deepu! 👋</h1>
+            <p class="text-gray-600" id="currentDateTime">Loading...</p>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div class="text-2xl font-bold text-primary-600" id="pendingCount">0</div>
+                <div class="text-sm text-gray-600">Pending</div>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div class="text-2xl font-bold text-green-600" id="completedCount">0</div>
+                <div class="text-sm text-gray-600">Completed</div>
+            </div>
+        </div>
+        
+        <!-- Today's Tasks Section -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6">
+            <div class="p-6 border-b border-gray-100">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-gray-800">Today's Focus</h2>
+                    <span class="text-sm text-primary-600 font-medium" id="todayTasksCount">0 tasks</span>
+                </div>
+            </div>
+            
+            <div id="todayTasksList" class="p-6">
+                <div id="noTodayTasksMessage" class="text-center py-8">
+                    <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-gray-500 mb-2">No tasks due today</p>
+                    <p class="text-sm text-gray-400">Take a well-deserved break! 🌟</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- All Tasks Section -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6">
+            <div class="p-6 border-b border-gray-100">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">All Tasks</h2>
+                
+                <!-- View Toggle -->
+                <div class="flex items-center justify-between">
+                    <div class="flex space-x-2">
+                        <button id="listViewBtn" class="px-3 py-1 rounded-lg bg-primary-600 text-white text-sm font-medium">
+                            📋 List
+                        </button>
+                        <button id="completedViewBtn" class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-300">
+                            ✅ Completed
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tasks" class="p-6">
+                <div id="noTasksMessage" class="text-center py-8">
+                    <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4v.01M9 16v.01"></path>
+                        </svg>
+                    </div>
+                    <p class="text-gray-500 mb-2">No tasks yet</p>
+                    <p class="text-sm text-gray-400">Tap the + button to add your first task!</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Floating Action Button -->
+        <div class="fixed bottom-6 right-6 z-40">
+            <button 
+                id="addTaskButton" 
+                class="w-16 h-16 bg-primary-600 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200 flex items-center justify-center"
+            >
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Bottom spacing for floating button -->
+        <div class="h-20"></div>
+    </div>
+    
+    <!-- Task Modal -->
+    <div id="taskModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+                <!-- Modal content will be dynamically created -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="js/scripts.js"></script>
 </body>
 </html>
